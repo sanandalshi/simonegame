@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div id="game-container">
+        <h1 id="level-title">Level 0</h1>
+        <div class="button" id="green"></div>
+        <div class="button" id="red"></div>
+        <div class="button" id="yellow"></div>
+        <div class="button" id="blue"></div>
+    </div>
+</body>
+<style>
+    /* styles.css */
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+}
+
+#game-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.button {
+    width: 200px;
+    height: 200px;
+    margin: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#green {
+    background-color: #4CAF50;
+}
+
+#red {
+    background-color: #F44336;
+}
+
+#yellow {
+    background-color: #FFEB3B;
+}
+
+#blue {
+    background-color: #2196F3;
+}
+
+.button:active {
+    opacity: 0.6;
+}
+
+</style>
+<script>
+    // script.js
+
+$(document).ready(function() {
+    const buttonColors = ["green", "red", "yellow", "blue"];
+    let gamePattern = [];
+    let userClickedPattern = [];
+    let level = 0;
+    let started = false;
+
+    // Start the game on keypress
+    $(document).keypress(function() {
+        if (!started) {
+            $("#level-title").text("Level " + level);
+            nextSequence();
+            started = true;
+        }
+    });
+
+    // Handle button click
+    $(".button").click(function() {
+        if (started) {
+            const userChosenColor = $(this).attr("id");
+            userClickedPattern.push(userChosenColor);
+
+            playSound(userChosenColor);
+            animatePress(userChosenColor);
+
+            checkAnswer(userClickedPattern.length - 1);
+        }
+    });
+
+    // Generate the next sequence
+    function nextSequence() {
+        userClickedPattern = [];
+        level++;
+        $("#level-title").text("Level " + level);
+
+        const randomNumber = Math.floor(Math.random() * 4);
+        const randomChosenColor = buttonColors[randomNumber];
+        gamePattern.push(randomChosenColor);
+
+        $("#" + randomChosenColor).fadeIn(100).fadeOut(100).fadeIn(100);
+        playSound(randomChosenColor);
+    }
+
+    // Check the user's answer
+    function checkAnswer(currentLevel) {
+        if (gamePattern[currentLevel] === userClickedPattern[currentLevel]) {
+            if (userClickedPattern.length === gamePattern.length) {
+                setTimeout(nextSequence, 1000);
+            }
+        } else {
+            playSound("wrong");
+            $("body").addClass("game-over");
+            $("#level-title").text("Game Over, Press Any Key to Restart");
+
+            setTimeout(function() {
+                $("body").removeClass("game-over");
+            }, 200);
+
+            startOver();
+        }
+    }
+
+    // Play sound for each color
+    function playSound(name) {
+        const audio = new Audio("sounds/" + name + ".mp3");
+        audio.play();
+    }
+
+    // Animate button press
+    function animatePress(currentColor) {
+        $("#" + currentColor).addClass("pressed");
+        setTimeout(function() {
+            $("#" + currentColor).removeClass("pressed");
+        }, 100);
+    }
+
+    // Restart the game
+    function startOver() {
+        level = 0;
+        gamePattern = [];
+        started = false;
+    }
+});
+
+</script>
+</html>
